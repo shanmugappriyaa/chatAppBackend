@@ -1,16 +1,24 @@
 const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const AppRoutes = require("./src/routes");
+// const mongoose = require('mongoose');
 const cookieParser = require("cookie-parser");
+const dotenv = require("dotenv");
+const jwt = require("jsonwebtoken");
+const cors = require("cors");
+
+const AppRoutes = require("./src/routes");
+// const User = require('./models/User');
+const Message = require("./src/models/Message");
 const ws = require("ws");
+const fs = require("fs");
+
 dotenv.config();
+// mongoose.connect(process.env.dbUrl, (err) => {
+//   if (err) throw err;
+// });
 const Port = process.env.port;
 const app = express();
-const jwt = require("jsonwebtoken");
+
 const jwtSecret = process.env.JWT_SECRET;
-const fs = require("fs");
-const Message = require("./src/models/Message");
 
 app.all("/*", function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "http://localhost:5173");
@@ -92,7 +100,7 @@ wss.on("connection", (connection, req) => {
 
   connection.on("message", async (message) => {
     const messageData = JSON.parse(message.toString());
-    console.log(messageData);
+    // console.log("messageData-------->", messageData);
     let filename = null;
     const { recipient, text, file } = messageData;
     if (file) {

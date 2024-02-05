@@ -1,6 +1,7 @@
 const userModel = require("../models/User");
 const jwt = require("jsonwebtoken");
 const auth = require("../common/auth");
+const Message = require('../models/Message');
 const jwtSecret = process.env.JWT_SECRET;
 var Cookies = require("cookies");
 
@@ -52,6 +53,7 @@ const registerUser = async (req, res) => {
   }
 };
 const loginUser = async (req, res) => {
+  const { userName, password } = req.body;
   try {
     let user = await userModel.findOne({ userName: req.body.userName });
     console.log(user);
@@ -59,9 +61,18 @@ const loginUser = async (req, res) => {
       let passCheck = await auth.hashCompare(req.body.password, user.password);
       console.log("passCheck=======> ", passCheck);
       if (passCheck) {
-        res.status(200).send({
-          message: "login Successful",
-        });
+        jwt.sign(
+          { userId: user._id, userName },
+          jwtSecret,
+          {},
+          (err, token) => {
+            res
+              .cookie("token", token, { sameSite: "none", secure: true })
+              .json({
+                id: user._id,
+              });
+          }
+        );
       } else {
         res.status(500).send({
           message: "Invalid Password",
@@ -82,6 +93,7 @@ const loginUser = async (req, res) => {
 
 const profile = async (req, res) => {
   const token = req.cookies?.token;
+  console.log("token========>", token);
   try {
     if (token) {
       jwt.verify(token, jwtSecret, {}, (err, userData) => {
@@ -125,7 +137,7 @@ const userMessages = async (req, res) => {
 
 const people = async (req, res) => {
   try {
-    const users = await userModel.find({}, { _id: 1,userName:1 });
+    const users = await userModel.find({}, { _id: 1, userName: 1 });
     res.json(users);
   } catch (error) {
     res.status(500).send({

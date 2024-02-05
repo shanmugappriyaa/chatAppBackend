@@ -1,11 +1,10 @@
-const mongoose = require('mongoose');
-require('dotenv').config()
+const mongoose = require("mongoose");
+require("dotenv").config();
 
-try{
-    mongoose.connect(`${process.env.dbUrl}/${process.env.dbName}`)
-}catch(err)
-{
-    console.log(err)
+try {
+  mongoose.connect(`${process.env.dbUrl}/${process.env.dbName}`);
+} catch (err) {
+  console.log(err);
 }
 
-module.exports = mongoose
+module.exports = mongoose;
