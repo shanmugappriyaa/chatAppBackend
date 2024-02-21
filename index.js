@@ -4,7 +4,7 @@ const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
-
+const cloudinary = require('cloudinary').v2;
 const AppRoutes = require("./src/routes");
 // const User = require('./models/User');
 const Message = require("./src/models/Message");
@@ -19,7 +19,11 @@ const Port = process.env.port;
 const app = express();
 
 const jwtSecret = process.env.JWT_SECRET;
-
+cloudinary.config({
+  cloud_name: 'dqnpuy2bs',
+  api_key: '436152527162723',
+  api_secret: 'BBwJHcJJIwtoSXyl6zjtjLe3syw'
+});
 app.all("/*", function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "http://localhost:5173");
   res.header("Access-Control-Allow-Headers", "X-Requested-With");
@@ -106,12 +110,23 @@ wss.on("connection", (connection, req) => {
       const parts = file.name.split(".");
       const ext = parts[parts.length - 1];
       filename = Date.now() + "." + ext;
-      const path = __dirname + "/uploads/" + filename;
-      console.log("path-->",path)
-      const bufferData = new Buffer(file.data.split(",")[1], "base64");
-      fs.writeFile(path, bufferData, () => {
-        console.log("file saved:" + path);
-      });
+      // const path = __dirname + "/uploads/" + filename;
+      // console.log("path-->",path)
+      // const bufferData = new Buffer(file.data.split(",")[1], "base64");
+      // fs.writeFile(path, bufferData, () => {
+      //   console.log("file saved:" + path);
+      // });
+      const bufferData = Buffer.from(file.data.split(",")[1], "base64");
+
+      // Upload file to Cloudinary
+      cloudinary.uploader.upload_stream({ resource_type: 'raw' }, (error, result) => {
+        if (error) {
+          console.error("Error uploading file to Cloudinary:", error);
+        } else {
+          console.log("File uploaded successfully to Cloudinary:", result.secure_url);
+          // Here you can perform any additional actions, such as saving the Cloudinary URL to a database
+        }
+      }).end(bufferData);
     }
     if (recipient && (text || file)) {
       const messageDoc = await Message.create({
