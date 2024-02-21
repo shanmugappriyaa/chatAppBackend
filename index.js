@@ -37,7 +37,14 @@ app.all("/*", function (req, res, next) {
   );
   next();
 });
-app.use("/uploads", express.static(__dirname + "/uploads"));
+// app.use("/uploads", express.static(__dirname + "/uploads"));
+app.get("/uploads/:filename", (req, res) => {
+  // Construct the Cloudinary URL based on the filename provided in the request
+  const cloudinaryUrl = `https://res.cloudinary.com/dqnpuy2bs/image/upload/${req.params.filename}`;
+
+  // Redirect the client to the Cloudinary URL
+  res.redirect(cloudinaryUrl);
+});
 app.use(express.json());
 app.use(cookieParser());
 app.use(
