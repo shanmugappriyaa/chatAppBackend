@@ -38,9 +38,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
+    origin: "*",
     credentials: true,
-    origin: "https://shan-chat.netlify.app", //"http://localhost:5173",
-    methods: ["GET", "POST"],
     optionSuccessStatus: 200,
   })
 );
@@ -107,7 +106,8 @@ wss.on("connection", (connection, req) => {
       const parts = file.name.split(".");
       const ext = parts[parts.length - 1];
       filename = Date.now() + "." + ext;
-      const path = __dirname + "/uploads" + filename;
+      const path = __dirname + "/uploads/" + filename;
+      console.log("path-->",path)
       const bufferData = new Buffer(file.data.split(",")[1], "base64");
       fs.writeFile(path, bufferData, () => {
         console.log("file saved:" + path);
@@ -120,7 +120,7 @@ wss.on("connection", (connection, req) => {
         text,
         file: file ? filename : null,
       });
-      console.log("created message");
+      // console.log("created message");
       [...wss.clients]
         .filter((c) => c.userId === recipient)
         .forEach((c) =>
