@@ -49,7 +49,7 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "*",
+    origin: "https://shan-chat.netlify.app",
     credentials: true,
     optionSuccessStatus: 200,
   })
