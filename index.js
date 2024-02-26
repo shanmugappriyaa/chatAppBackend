@@ -4,7 +4,7 @@ const cookieParser = require("cookie-parser");
 const dotenv = require("dotenv");
 const jwt = require("jsonwebtoken");
 const cors = require("cors");
-const cloudinary = require('cloudinary').v2;
+
 const AppRoutes = require("./src/routes");
 // const User = require('./models/User');
 const Message = require("./src/models/Message");
@@ -19,13 +19,9 @@ const Port = process.env.port;
 const app = express();
 
 const jwtSecret = process.env.JWT_SECRET;
-cloudinary.config({
-  cloud_name: 'dqnpuy2bs',
-  api_key: '436152527162723',
-  api_secret: 'BBwJHcJJIwtoSXyl6zjtjLe3syw'
-});
+
 app.all("/*", function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
   res.header("Access-Control-Allow-Headers", "X-Requested-With");
   res.header(
     "Access-Control-Allow-Methods",
@@ -37,20 +33,13 @@ app.all("/*", function (req, res, next) {
   );
   next();
 });
-// app.use("/uploads", express.static(__dirname + "/uploads"));
-app.get("/uploads/:filename", (req, res) => {
-  // Construct the Cloudinary URL based on the filename provided in the request
-  const cloudinaryUrl = `https://res.cloudinary.com/dqnpuy2bs/image/upload/${req.params.filename}`;
-
-  // Redirect the client to the Cloudinary URL
-  res.redirect(cloudinaryUrl);
-});
+app.use("/uploads", express.static(__dirname + "/uploads"));
 app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
     credentials: true,
-    origin: "*", //"https://shan-chat.netlify.app", //"http://localhost:5173",
+    origin: "https://shan-chat.netlify.app", //"https://shan-chat.netlify.app", //"http://localhost:5173",
     methods: ["GET", "POST"],
     optionSuccessStatus: 200,
   })
@@ -118,23 +107,11 @@ wss.on("connection", (connection, req) => {
       const parts = file.name.split(".");
       const ext = parts[parts.length - 1];
       filename = Date.now() + "." + ext;
-      // const path = __dirname + "/uploads/" + filename;
-      // console.log("path-->",path)
-      // const bufferData = new Buffer(file.data.split(",")[1], "base64");
-      // fs.writeFile(path, bufferData, () => {
-      //   console.log("file saved:" + path);
-      // });
-      const bufferData = Buffer.from(file.data.split(",")[1], "base64");
-
-      // Upload file to Cloudinary
-      cloudinary.uploader.upload_stream({ resource_type: 'raw' }, (error, result) => {
-        if (error) {
-          console.error("Error uploading file to Cloudinary:", error);
-        } else {
-          console.log("File uploaded successfully to Cloudinary:", result.secure_url);
-          // Here you can perform any additional actions, such as saving the Cloudinary URL to a database
-        }
-      }).end(bufferData);
+      const path = __dirname + "/uploads" + filename;
+      const bufferData = new Buffer(file.data.split(",")[1], "base64");
+      fs.writeFile(path, bufferData, () => {
+        console.log("file saved:" + path);
+      });
     }
     if (recipient && (text || file)) {
       const messageDoc = await Message.create({
@@ -143,7 +120,7 @@ wss.on("connection", (connection, req) => {
         text,
         file: file ? filename : null,
       });
-      // console.log("created message");
+      console.log("created message");
       [...wss.clients]
         .filter((c) => c.userId === recipient)
         .forEach((c) =>

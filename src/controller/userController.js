@@ -116,16 +116,16 @@ const profile = async (req, res) => {
 const userMessages = async (req, res) => {
   try {
     const { userId } = req.params;
-  
+    console.log("userId------>", userId);
     const userData = await getUserDataFromReq(req);
-    
+    console.log("userData------>", userData);
     const ourUserId = userData.userId;
-    
+    console.log("ourUserId------>", ourUserId);
     const mesaages = await Message.find({
       sender: { $in: [userId, ourUserId] },
       recipient: { $in: [userId, ourUserId] },
     }).sort({ createdAt: 1 });
-    // console.log("mesaages------>", mesaages);
+    console.log("mesaages------>", mesaages);
     res.json(mesaages);
   } catch (error) {
     res.status(500).send({
